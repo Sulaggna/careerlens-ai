@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import AuthLayout from '../components/layout/AuthLayout'
 import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth, ApiError } from '../contexts/AuthContext'
 
 export default function Register() {
   const [name, setName] = useState('')
@@ -38,8 +38,12 @@ export default function Register() {
     try {
       await register(name, email, password)
       navigate('/dashboard')
-    } catch {
-      setError('Registration failed. Please try again.')
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.message)
+      } else {
+        setError('Unable to connect to server. Please ensure the backend is running.')
+      }
     } finally {
       setLoading(false)
     }

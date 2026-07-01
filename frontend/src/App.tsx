@@ -6,7 +6,8 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import ResumeUpload from './pages/ResumeUpload'
-import ATSResult from './pages/ATSResult'
+import ResumeHistory from './pages/ResumeHistory'
+import ATSResultPage from './pages/ATSResult'
 import MockInterview from './pages/MockInterview'
 import Profile from './pages/Profile'
 
@@ -36,7 +37,8 @@ export default function App() {
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/resume-upload" element={<ResumeUpload />} />
-          <Route path="/ats-result" element={<ATSResult />} />
+          <Route path="/resume-history" element={<ResumeHistory />} />
+          <Route path="/ats-result" element={<ATSResultPage />} />
           <Route path="/mock-interview" element={<MockInterview />} />
           <Route path="/profile" element={<Profile />} />
         </Route>

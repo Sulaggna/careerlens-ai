@@ -1,44 +1,33 @@
-import { FileText, MoreHorizontal } from 'lucide-react'
-import Badge from '../ui/Badge'
-import ProgressBar from '../ui/ProgressBar'
-
-interface ResumeUpload {
-  id: string
-  fileName: string
-  uploadedAt: string
-  fileSize: string
-  atsScore: number
-  status: 'completed' | 'processing' | 'failed'
-}
+import { FileText } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { formatFileSize, formatRelativeTime } from '../../utils/format'
+import type { Resume } from '../../types'
 
 interface ResumeUploadsTableProps {
-  uploads: ResumeUpload[]
-}
-
-const statusVariant = {
-  completed: 'success' as const,
-  processing: 'info' as const,
-  failed: 'danger' as const,
-}
-
-const statusLabel = {
-  completed: 'Completed',
-  processing: 'Processing',
-  failed: 'Failed',
+  uploads: Resume[]
 }
 
 export default function ResumeUploadsTable({ uploads }: ResumeUploadsTableProps) {
+  if (uploads.length === 0) {
+    return (
+      <div className="py-8 text-center text-sm text-muted">
+        No resumes uploaded yet.{' '}
+        <Link to="/resume-upload" className="font-medium text-primary-500 hover:text-primary-600">
+          Upload your first resume
+        </Link>
+      </div>
+    )
+  }
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-border text-left">
-            <th className="pb-3 pr-4 font-medium text-muted">File Name</th>
-            <th className="pb-3 pr-4 font-medium text-muted hidden sm:table-cell">Uploaded</th>
-            <th className="pb-3 pr-4 font-medium text-muted hidden md:table-cell">Size</th>
-            <th className="pb-3 pr-4 font-medium text-muted">ATS Score</th>
-            <th className="pb-3 pr-4 font-medium text-muted">Status</th>
-            <th className="pb-3 font-medium text-muted w-10" />
+            <th className="pb-3 pr-4 font-medium text-muted">Resume Title</th>
+            <th className="pb-3 pr-4 font-medium text-muted hidden sm:table-cell">File Name</th>
+            <th className="pb-3 pr-4 font-medium text-muted hidden md:table-cell">Uploaded</th>
+            <th className="pb-3 pr-4 font-medium text-muted">Size</th>
           </tr>
         </thead>
         <tbody>
@@ -53,26 +42,15 @@ export default function ResumeUploadsTable({ uploads }: ResumeUploadsTableProps)
                     <FileText className="h-4 w-4 text-primary-500" />
                   </div>
                   <span className="truncate font-medium text-foreground max-w-[160px] sm:max-w-none">
-                    {upload.fileName}
+                    {upload.resumeTitle}
                   </span>
                 </div>
               </td>
-              <td className="py-3.5 pr-4 text-muted hidden sm:table-cell">{upload.uploadedAt}</td>
-              <td className="py-3.5 pr-4 text-muted hidden md:table-cell">{upload.fileSize}</td>
-              <td className="py-3.5 pr-4">
-                <div className="flex items-center gap-2 min-w-[100px]">
-                  <ProgressBar value={upload.atsScore} size="sm" className="flex-1" />
-                  <span className="text-xs font-semibold text-foreground w-8">{upload.atsScore}%</span>
-                </div>
+              <td className="py-3.5 pr-4 text-muted hidden sm:table-cell">{upload.originalFileName}</td>
+              <td className="py-3.5 pr-4 text-muted hidden md:table-cell">
+                {formatRelativeTime(upload.uploadDate)}
               </td>
-              <td className="py-3.5 pr-4">
-                <Badge variant={statusVariant[upload.status]}>{statusLabel[upload.status]}</Badge>
-              </td>
-              <td className="py-3.5">
-                <button className="rounded-lg p-1.5 text-muted hover:bg-muted-bg hover:text-foreground">
-                  <MoreHorizontal className="h-4 w-4" />
-                </button>
-              </td>
+              <td className="py-3.5 pr-4 text-muted">{formatFileSize(upload.fileSize)}</td>
             </tr>
           ))}
         </tbody>

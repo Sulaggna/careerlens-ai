@@ -18,7 +18,8 @@ export default function ATSScoreTrendChart({ data }: ATSScoreTrendChartProps) {
   const minVal = Math.min(...data.map((d) => d.value)) - 10
 
   const points = data.map((d, i) => {
-    const x = padding.left + (i / (data.length - 1)) * chartW
+    const divisor = Math.max(data.length - 1, 1)
+    const x = padding.left + (i / divisor) * chartW
     const y = padding.top + chartH - ((d.value - minVal) / (maxVal - minVal)) * chartH
     return { x, y, ...d }
   })

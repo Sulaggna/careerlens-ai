@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import AuthLayout from '../components/layout/AuthLayout'
 import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth, ApiError } from '../contexts/AuthContext'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -12,6 +12,8 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const successMessage = (location.state as { message?: string } | null)?.message
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -26,8 +28,12 @@ export default function Login() {
     try {
       await login(email, password)
       navigate('/dashboard')
-    } catch {
-      setError('Invalid email or password')
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.message)
+      } else {
+        setError('Unable to connect to server. Please ensure the backend is running.')
+      }
     } finally {
       setLoading(false)
     }
@@ -39,6 +45,11 @@ export default function Login() {
       subtitle="Sign in to CareerLens AI to continue your career journey"
     >
       <form onSubmit={handleSubmit} className="space-y-5">
+        {successMessage && (
+          <div className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400">
+            {successMessage}
+          </div>
+        )}
         {error && (
           <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600 dark:bg-red-950/30 dark:text-red-400">
             {error}

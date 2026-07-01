@@ -5,6 +5,7 @@ import ThemeToggle from '../ui/ThemeToggle'
 const pageTitles: Record<string, string> = {
   '/dashboard': 'Dashboard',
   '/resume-upload': 'Resume Upload',
+  '/resume-history': 'Resume History',
   '/ats-result': 'ATS Result',
   '/mock-interview': 'Mock Interview',
   '/profile': 'Profile',

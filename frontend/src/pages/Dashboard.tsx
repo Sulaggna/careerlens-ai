@@ -1,5 +1,6 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { FileText, BarChart3, MessageSquare, Clock, ArrowRight } from 'lucide-react'
+import { FileText, BarChart3, MessageSquare, Trophy, ArrowRight } from 'lucide-react'
 import StatCard from '../components/ui/StatCard'
 import Card, { CardHeader } from '../components/ui/Card'
 import Button from '../components/ui/Button'
@@ -8,16 +9,11 @@ import SectionHeader from '../components/dashboard/SectionHeader'
 import QuickActions from '../components/dashboard/QuickActions'
 import ATSScoreTrendChart from '../components/dashboard/ATSScoreTrendChart'
 import InterviewPerformanceChart from '../components/dashboard/InterviewPerformanceChart'
-import ResumeUploadsTable from '../components/dashboard/ResumeUploadsTable'
-
-const atsTrendData = [
-  { label: 'Jan', value: 62 },
-  { label: 'Feb', value: 68 },
-  { label: 'Mar', value: 71 },
-  { label: 'Apr', value: 76 },
-  { label: 'May', value: 79 },
-  { label: 'Jun', value: 82 },
-]
+import RecentAnalysesTable from '../components/dashboard/RecentAnalysesTable'
+import { fetchResumes } from '../services/resumeService'
+import { fetchATSHistory, fetchATSStats } from '../services/atsService'
+import type { Resume } from '../types'
+import type { ATSResult, ATSStats } from '../services/atsService'
 
 const interviewData = [
   { label: 'Behavioral', score: 8, maxScore: 10 },
@@ -26,42 +22,36 @@ const interviewData = [
   { label: 'Communication', score: 9, maxScore: 10 },
 ]
 
-const recentUploads = [
-  {
-    id: '1',
-    fileName: 'Alex_Johnson_Resume.pdf',
-    uploadedAt: '2 hours ago',
-    fileSize: '245 KB',
-    atsScore: 82,
-    status: 'completed' as const,
-  },
-  {
-    id: '2',
-    fileName: 'Alex_Johnson_Resume_v2.pdf',
-    uploadedAt: '1 day ago',
-    fileSize: '312 KB',
-    atsScore: 76,
-    status: 'completed' as const,
-  },
-  {
-    id: '3',
-    fileName: 'Cover_Letter.docx',
-    uploadedAt: '3 days ago',
-    fileSize: '128 KB',
-    atsScore: 68,
-    status: 'completed' as const,
-  },
-  {
-    id: '4',
-    fileName: 'Senior_Engineer_CV.pdf',
-    uploadedAt: '5 days ago',
-    fileSize: '198 KB',
-    atsScore: 0,
-    status: 'processing' as const,
-  },
-]
-
 export default function Dashboard() {
+  const [resumes, setResumes] = useState<Resume[]>([])
+  const [analyses, setAnalyses] = useState<ATSResult[]>([])
+  const [stats, setStats] = useState<ATSStats | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    Promise.all([
+      fetchResumes().catch(() => [] as Resume[]),
+      fetchATSHistory().catch(() => [] as ATSResult[]),
+      fetchATSStats().catch(() => null),
+    ])
+      .then(([resumeData, historyData, statsData]) => {
+        setResumes(resumeData)
+        setAnalyses(historyData)
+        setStats(statsData)
+      })
+      .finally(() => setLoading(false))
+  }, [])
+
+  const trendData = [...analyses]
+    .reverse()
+    .slice(-6)
+    .map((item, index) => ({
+      label: `#${index + 1}`,
+      value: item.atsScore,
+    }))
+
+  const recentAnalyses = analyses.slice(0, 5)
+
   return (
     <div className="space-y-12">
       <HeroBanner />
@@ -74,35 +64,29 @@ export default function Dashboard() {
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
             title="Total Resumes"
-            value={4}
+            value={loading ? '—' : resumes.length}
             icon={<FileText className="h-7 w-7" />}
-            trend={{ value: 12, label: 'this month' }}
           />
           <StatCard
             title="Average ATS Score"
-            value="75%"
+            value={loading || !stats || stats.totalAnalyses === 0 ? '—' : `${stats.averageScore}%`}
             icon={<BarChart3 className="h-7 w-7" />}
-            trend={{ value: 8, label: 'improvement' }}
           />
           <StatCard
-            title="Interviews Completed"
-            value={5}
+            title="Total Analyses"
+            value={loading || !stats ? '—' : stats.totalAnalyses}
             icon={<MessageSquare className="h-7 w-7" />}
-            trend={{ value: 0, label: 'this week' }}
           />
           <StatCard
-            title="Last Analysis"
-            value="2h ago"
-            icon={<Clock className="h-7 w-7" />}
+            title="Best ATS Score"
+            value={loading || !stats || stats.totalAnalyses === 0 ? '—' : `${stats.bestScore}%`}
+            icon={<Trophy className="h-7 w-7" />}
           />
         </div>
       </section>
 
       <section>
-        <SectionHeader
-          title="Quick Actions"
-          description="Jump into the tools you need most"
-        />
+        <SectionHeader title="Quick Actions" description="Jump into the tools you need most" />
         <QuickActions />
       </section>
 
@@ -113,18 +97,18 @@ export default function Dashboard() {
         />
         <div className="grid gap-6 lg:grid-cols-2">
           <Card className="transition-all duration-300 hover:shadow-md">
-            <CardHeader
-              title="ATS Score Trend"
-              description="Your resume compatibility over time"
-            />
-            <ATSScoreTrendChart data={atsTrendData} />
+            <CardHeader title="ATS Score Trend" description="Your recent analysis scores" />
+            {trendData.length > 1 ? (
+              <ATSScoreTrendChart data={trendData} />
+            ) : (
+              <div className="py-8 text-center text-sm text-muted">
+                Analyze at least two resumes to see a trend chart.
+              </div>
+            )}
           </Card>
 
           <Card className="transition-all duration-300 hover:shadow-md">
-            <CardHeader
-              title="Interview Performance"
-              description="Scores from your recent mock sessions"
-            />
+            <CardHeader title="Interview Performance" description="Scores from your recent mock sessions" />
             <InterviewPerformanceChart data={interviewData} />
           </Card>
         </div>
@@ -134,19 +118,25 @@ export default function Dashboard() {
         <Card padding="none" className="transition-all duration-300 hover:shadow-md">
           <div className="p-6 pb-0 sm:p-8 sm:pb-0">
             <CardHeader
-              title="Recent Resume Uploads"
-              description="Track your uploaded resumes and ATS scores"
+              title="Recent Analyses"
+              description="Your latest ATS analysis results"
               action={
                 <Link to="/ats-result">
                   <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                    View all
+                    Analyze resume
                   </Button>
                 </Link>
               }
             />
           </div>
           <div className="px-6 pb-6 sm:px-8 sm:pb-8">
-            <ResumeUploadsTable uploads={recentUploads} />
+            {loading ? (
+              <div className="flex justify-center py-8">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary-500 border-t-transparent" />
+              </div>
+            ) : (
+              <RecentAnalysesTable analyses={recentAnalyses} />
+            )}
           </div>
         </Card>
       </section>

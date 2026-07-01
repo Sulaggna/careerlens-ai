@@ -21,6 +21,14 @@ const actions = [
     iconColor: 'text-secondary-500',
   },
   {
+    title: 'Resume History',
+    description: 'View and manage your uploaded resumes',
+    icon: Upload,
+    to: '/resume-history',
+    bg: 'bg-secondary-50 dark:bg-secondary-950/30',
+    iconColor: 'text-secondary-500',
+  },
+  {
     title: 'Mock Interview',
     description: 'Practice with AI-generated interview questions',
     icon: MessageSquare,

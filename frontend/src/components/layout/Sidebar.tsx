@@ -7,6 +7,7 @@ import {
   User,
   LogOut,
   X,
+  History,
 } from 'lucide-react'
 import { cn } from '../../utils/cn'
 import { useAuth } from '../../contexts/AuthContext'
@@ -17,6 +18,7 @@ import ThemeToggle from '../ui/ThemeToggle'
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/resume-upload', label: 'Resume Upload', icon: Upload },
+  { to: '/resume-history', label: 'Resume History', icon: History },
   { to: '/ats-result', label: 'ATS Result', icon: BarChart3 },
   { to: '/mock-interview', label: 'Mock Interview', icon: MessageSquare },
   { to: '/profile', label: 'Profile', icon: User },

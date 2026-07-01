@@ -1,28 +1,28 @@
 import { useState, useCallback, type DragEvent, type ChangeEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Upload, FileText, X, CheckCircle, AlertCircle } from 'lucide-react'
 import Card, { CardHeader } from '../components/ui/Card'
 import Button from '../components/ui/Button'
+import Input from '../components/ui/Input'
 import { cn } from '../utils/cn'
+import { formatFileSize } from '../utils/format'
+import { uploadResume } from '../services/resumeService'
+import { ApiError } from '../contexts/AuthContext'
 
-const ACCEPTED_TYPES = [
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-]
-
-const MAX_SIZE_MB = 5
+const MAX_SIZE_MB = 10
 
 export default function ResumeUpload() {
   const [file, setFile] = useState<File | null>(null)
+  const [resumeTitle, setResumeTitle] = useState('')
   const [dragActive, setDragActive] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [uploading, setUploading] = useState(false)
-  const navigate = useNavigate()
+  const [progress, setProgress] = useState(0)
 
   const validateFile = (selected: File): string | null => {
-    if (!ACCEPTED_TYPES.includes(selected.type)) {
-      return 'Only PDF and Word documents are accepted'
+    if (selected.type !== 'application/pdf' && !selected.name.toLowerCase().endsWith('.pdf')) {
+      return 'Only PDF files are allowed'
     }
     if (selected.size > MAX_SIZE_MB * 1024 * 1024) {
       return `File size must be less than ${MAX_SIZE_MB}MB`
@@ -30,7 +30,7 @@ export default function ResumeUpload() {
     return null
   }
 
-  const handleFile = (selected: File) => {
+  const handleFile = useCallback((selected: File) => {
     const validationError = validateFile(selected)
     if (validationError) {
       setError(validationError)
@@ -38,8 +38,13 @@ export default function ResumeUpload() {
       return
     }
     setError('')
+    setSuccess('')
     setFile(selected)
-  }
+    if (!resumeTitle) {
+      const name = selected.name.replace(/\.pdf$/i, '')
+      setResumeTitle(name)
+    }
+  }, [resumeTitle])
 
   const handleDrag = useCallback((e: DragEvent) => {
     e.preventDefault()
@@ -51,14 +56,17 @@ export default function ResumeUpload() {
     }
   }, [])
 
-  const handleDrop = useCallback((e: DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setDragActive(false)
-    if (e.dataTransfer.files?.[0]) {
-      handleFile(e.dataTransfer.files[0])
-    }
-  }, [])
+  const handleDrop = useCallback(
+    (e: DragEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      setDragActive(false)
+      if (e.dataTransfer.files?.[0]) {
+        handleFile(e.dataTransfer.files[0])
+      }
+    },
+    [handleFile],
+  )
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {
@@ -69,15 +77,25 @@ export default function ResumeUpload() {
   const handleUpload = async () => {
     if (!file) return
     setUploading(true)
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    setUploading(false)
-    navigate('/ats-result')
-  }
+    setProgress(0)
+    setError('')
+    setSuccess('')
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+    try {
+      await uploadResume(file, resumeTitle, setProgress)
+      setSuccess('Resume uploaded successfully!')
+      setFile(null)
+      setResumeTitle('')
+      setProgress(100)
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.message)
+      } else {
+        setError('Upload failed. Please try again.')
+      }
+    } finally {
+      setUploading(false)
+    }
   }
 
   return (
@@ -85,15 +103,14 @@ export default function ResumeUpload() {
       <div>
         <h2 className="text-2xl font-bold text-foreground">Upload Your Resume</h2>
         <p className="mt-1 text-muted">
-          Upload your resume to get an ATS compatibility score and personalized suggestions from
-          CareerLens AI.
+          Upload a PDF resume to store it securely and prepare for ATS analysis with CareerLens AI.
         </p>
       </div>
 
       <Card>
         <CardHeader
-          title="Select File"
-          description="Drag and drop or click to browse. PDF and DOCX up to 5MB."
+          title="Select PDF File"
+          description={`Drag and drop or click to browse. PDF only, up to ${MAX_SIZE_MB}MB.`}
         />
 
         <div
@@ -111,17 +128,18 @@ export default function ResumeUpload() {
         >
           <input
             type="file"
-            accept=".pdf,.doc,.docx"
+            accept=".pdf,application/pdf"
             onChange={handleChange}
             className="absolute inset-0 cursor-pointer opacity-0"
+            disabled={uploading}
           />
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary-50 text-primary-500 dark:bg-primary-950/50">
             <Upload className="h-7 w-7" />
           </div>
           <p className="mt-4 text-sm font-medium text-foreground">
-            Drop your resume here or click to browse
+            Drop your PDF resume here or click to browse
           </p>
-          <p className="mt-1 text-xs text-muted">PDF, DOC, DOCX — Max {MAX_SIZE_MB}MB</p>
+          <p className="mt-1 text-xs text-muted">PDF only — Max {MAX_SIZE_MB}MB</p>
         </div>
 
         {error && (
@@ -131,31 +149,64 @@ export default function ResumeUpload() {
           </div>
         )}
 
+        {success && (
+          <div className="mt-4 flex items-center gap-2 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400">
+            <CheckCircle className="h-4 w-4 shrink-0" />
+            {success}
+          </div>
+        )}
+
         {file && (
-          <div className="mt-4 flex items-center gap-4 rounded-lg border border-border bg-card p-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary-50 dark:bg-secondary-950/30">
-              <FileText className="h-5 w-5 text-secondary-500" />
+          <div className="mt-4 space-y-4">
+            <div className="flex items-center gap-4 rounded-lg border border-border bg-card p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary-50 dark:bg-secondary-950/30">
+                <FileText className="h-5 w-5 text-secondary-500" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-foreground">{file.name}</p>
+                <p className="text-xs text-muted">{formatFileSize(file.size)}</p>
+              </div>
+              <CheckCircle className="h-5 w-5 text-emerald-500" />
+              <button
+                onClick={() => setFile(null)}
+                disabled={uploading}
+                className="rounded-lg p-1.5 text-muted hover:bg-muted-bg hover:text-foreground disabled:opacity-50"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-foreground">{file.name}</p>
-              <p className="text-xs text-muted">{formatFileSize(file.size)}</p>
+
+            <Input
+              label="Resume Title"
+              value={resumeTitle}
+              onChange={(e) => setResumeTitle(e.target.value)}
+              placeholder="e.g. Software Engineer Resume"
+              hint="Optional — defaults to file name"
+            />
+          </div>
+        )}
+
+        {uploading && (
+          <div className="mt-4">
+            <div className="mb-2 flex justify-between text-sm">
+              <span className="text-muted">Uploading...</span>
+              <span className="font-medium text-foreground">{progress}%</span>
             </div>
-            <CheckCircle className="h-5 w-5 text-emerald-500" />
-            <button
-              onClick={() => setFile(null)}
-              className="rounded-lg p-1.5 text-muted hover:bg-muted-bg hover:text-foreground"
-            >
-              <X className="h-4 w-4" />
-            </button>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-muted-bg">
+              <div
+                className="h-full rounded-full bg-primary-500 transition-all duration-300"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
           </div>
         )}
 
         <div className="mt-6 flex justify-end gap-3">
-          <Button variant="outline" onClick={() => setFile(null)} disabled={!file}>
+          <Button variant="outline" onClick={() => { setFile(null); setResumeTitle('') }} disabled={!file || uploading}>
             Clear
           </Button>
-          <Button onClick={handleUpload} disabled={!file} loading={uploading}>
-            Analyze Resume
+          <Button onClick={handleUpload} disabled={!file || uploading} loading={uploading}>
+            Upload Resume
           </Button>
         </div>
       </Card>
@@ -175,6 +226,11 @@ export default function ResumeUpload() {
             </li>
           ))}
         </ul>
+        <div className="mt-4">
+          <Link to="/resume-history" className="text-sm font-medium text-primary-500 hover:text-primary-600">
+            View your uploaded resumes →
+          </Link>
+        </div>
       </Card>
     </div>
   )

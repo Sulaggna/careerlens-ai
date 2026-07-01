@@ -1,24 +1,35 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import type { User } from '../types'
+import {
+  loginUser,
+  registerUser,
+  fetchCurrentUser,
+  updateUserProfile,
+  deleteUserAccount,
+} from '../services/authService'
+import { ApiError, clearAuthToken, setAuthToken } from '../services/api'
 
 interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
+  isLoading: boolean
   login: (email: string, password: string) => Promise<void>
   register: (name: string, email: string, password: string) => Promise<void>
   logout: () => void
-  updateProfile: (data: Partial<User>) => void
+  updateProfile: (data: Partial<User>) => Promise<void>
+  deleteAccount: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
 
-const DEMO_USER: User = {
-  id: '1',
-  name: 'Alex Johnson',
-  email: 'alex@example.com',
-  title: 'Software Engineer',
-  location: 'San Francisco, CA',
-  bio: 'Passionate developer focused on building impactful products.',
+function persistSession(user: User, token: string) {
+  setAuthToken(token)
+  localStorage.setItem('user', JSON.stringify(user))
+}
+
+function clearSession() {
+  clearAuthToken()
+  localStorage.removeItem('user')
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -26,31 +37,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const stored = localStorage.getItem('user')
     return stored ? JSON.parse(stored) : null
   })
+  const [isLoading, setIsLoading] = useState(true)
 
-  const login = async (email: string, _password: string) => {
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    const loggedInUser = { ...DEMO_USER, email }
-    setUser(loggedInUser)
-    localStorage.setItem('user', JSON.stringify(loggedInUser))
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      setIsLoading(false)
+      return
+    }
+
+    fetchCurrentUser()
+      .then((currentUser) => {
+        setUser(currentUser)
+        localStorage.setItem('user', JSON.stringify(currentUser))
+      })
+      .catch(() => {
+        clearSession()
+        setUser(null)
+      })
+      .finally(() => setIsLoading(false))
+  }, [])
+
+  const login = async (email: string, password: string) => {
+    const authData = await loginUser({ email, password })
+    setUser(authData.user)
+    persistSession(authData.user, authData.token)
   }
 
-  const register = async (name: string, email: string, _password: string) => {
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    const newUser: User = { id: Date.now().toString(), name, email }
-    setUser(newUser)
-    localStorage.setItem('user', JSON.stringify(newUser))
+  const register = async (name: string, email: string, password: string) => {
+    const authData = await registerUser({ name, email, password })
+    setUser(authData.user)
+    persistSession(authData.user, authData.token)
   }
 
   const logout = () => {
     setUser(null)
-    localStorage.removeItem('user')
+    clearSession()
   }
 
-  const updateProfile = (data: Partial<User>) => {
-    if (!user) return
-    const updated = { ...user, ...data }
+  const updateProfile = async (data: Partial<User>) => {
+    const updated = await updateUserProfile(data)
     setUser(updated)
     localStorage.setItem('user', JSON.stringify(updated))
+  }
+
+  const deleteAccount = async () => {
+    await deleteUserAccount()
+    setUser(null)
+    clearSession()
   }
 
   return (
@@ -58,10 +92,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         isAuthenticated: !!user,
+        isLoading,
         login,
         register,
         logout,
         updateProfile,
+        deleteAccount,
       }}
     >
       {children}
@@ -76,3 +112,5 @@ export function useAuth() {
   }
   return context
 }
+
+export { ApiError }

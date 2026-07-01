@@ -8,6 +8,16 @@ export interface User {
   avatarUrl?: string
 }
 
+export interface Resume {
+  id: string
+  userId: string
+  fileName: string
+  originalFileName: string
+  fileSize: number
+  uploadDate: string
+  resumeTitle: string
+}
+
 export interface ResumeAnalysis {
   id: string
   fileName: string
