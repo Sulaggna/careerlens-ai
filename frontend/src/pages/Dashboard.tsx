@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { FileText, BarChart3, MessageSquare, Trophy, ArrowRight } from 'lucide-react'
+import { FileText, BarChart3, Trophy, ArrowRight, Users } from 'lucide-react'
 import StatCard from '../components/ui/StatCard'
 import Card, { CardHeader } from '../components/ui/Card'
 import Button from '../components/ui/Button'
@@ -12,8 +12,10 @@ import InterviewPerformanceChart from '../components/dashboard/InterviewPerforma
 import RecentAnalysesTable from '../components/dashboard/RecentAnalysesTable'
 import { fetchResumes } from '../services/resumeService'
 import { fetchATSHistory, fetchATSStats } from '../services/atsService'
+import { getInterviewStats } from '../services/interviewService'
 import type { Resume } from '../types'
 import type { ATSResult, ATSStats } from '../services/atsService'
+import type { InterviewStats } from '../services/interviewService'
 
 const interviewData = [
   { label: 'Behavioral', score: 8, maxScore: 10 },
@@ -26,6 +28,7 @@ export default function Dashboard() {
   const [resumes, setResumes] = useState<Resume[]>([])
   const [analyses, setAnalyses] = useState<ATSResult[]>([])
   const [stats, setStats] = useState<ATSStats | null>(null)
+  const [interviewStats, setInterviewStats] = useState<InterviewStats | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -33,11 +36,13 @@ export default function Dashboard() {
       fetchResumes().catch(() => [] as Resume[]),
       fetchATSHistory().catch(() => [] as ATSResult[]),
       fetchATSStats().catch(() => null),
+      getInterviewStats().catch(() => null),
     ])
-      .then(([resumeData, historyData, statsData]) => {
+      .then(([resumeData, historyData, statsData, interviewStatsData]) => {
         setResumes(resumeData)
         setAnalyses(historyData)
         setStats(statsData)
+        setInterviewStats(interviewStatsData)
       })
       .finally(() => setLoading(false))
   }, [])
@@ -73,13 +78,13 @@ export default function Dashboard() {
             icon={<BarChart3 className="h-7 w-7" />}
           />
           <StatCard
-            title="Total Analyses"
-            value={loading || !stats ? '—' : stats.totalAnalyses}
-            icon={<MessageSquare className="h-7 w-7" />}
+            title="Total Interviews"
+            value={loading || !interviewStats ? '—' : interviewStats.totalInterviews}
+            icon={<Users className="h-7 w-7" />}
           />
           <StatCard
-            title="Best ATS Score"
-            value={loading || !stats || stats.totalAnalyses === 0 ? '—' : `${stats.bestScore}%`}
+            title="Avg Interview Score"
+            value={loading || !interviewStats || interviewStats.completedInterviews === 0 ? '—' : `${interviewStats.averageScore}%`}
             icon={<Trophy className="h-7 w-7" />}
           />
         </div>
