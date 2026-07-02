@@ -187,19 +187,19 @@ application.properties
 
 ## Home Page
 
-()
+![Home](./frontend/src/assets/Screenshot/home.jpeg)
 
 ## Dashboard
 
-(Add Screenshot)
+![Dashboard](./frontend/src/assets/Screenshot/dashboard.jpeg)
 
 ## Resume Analysis
 
-(Add Screenshot)
+![Analyzer](./frontend/src/assets/Screenshot/analyzer.jpeg)
 
 ## Mock Interview
 
-(Add Screenshot)
+![Mock Test](./frontend/src/assets/Screenshot/mock_test.jpeg)
 
 ---
 
