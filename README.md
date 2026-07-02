@@ -238,7 +238,7 @@ This project was developed collaboratively.
 - Authentication & Authorization
 - GitHub Repository Management
 
-### Rohit Shill
+### Rohit Sil
 
 - React Frontend
 - UI Design
