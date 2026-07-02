@@ -187,7 +187,7 @@ application.properties
 
 ## Home Page
 
-(Add Screenshot)
+()
 
 ## Dashboard
 
@@ -223,8 +223,7 @@ This project was developed collaboratively.
 | Name | Role |
 |------|------|
 | **Sulagna Dey** | Full Stack Developer |
-| **Teammate Name** | Frontend Developer |
-| **Teammate Name** | AI/ML Developer |
+| **Rohit Sil** | Frontend Developer |
 
 ---
 
