@@ -1,80 +1,109 @@
 # 🚀 CareerLens AI
 
-An AI-powered Resume Analyzer and Mock Interview Platform built using React, Spring Boot, FastAPI, and MySQL.
+An AI-powered Resume Analyzer & Mock Interview Platform that helps students and job seekers improve their resumes, prepare for interviews, and receive AI-driven career guidance.
+
+![Java](https://img.shields.io/badge/Java-17-orange)
+![Spring Boot](https://img.shields.io/badge/SpringBoot-3.x-brightgreen)
+![React](https://img.shields.io/badge/React-19-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-Python-green)
+![MySQL](https://img.shields.io/badge/Database-MySQL-blue)
+![License](https://img.shields.io/badge/License-MIT-yellow)
+
+---
 
 ## 📌 Overview
 
-CareerLens AI helps students and job seekers improve their resumes, analyze ATS compatibility, and practice AI-powered mock interviews.
+CareerLens AI is a full-stack web application that combines Artificial Intelligence with career guidance.
+
+The platform allows users to:
+
+- 📄 Analyze resumes using AI
+- 🎤 Practice mock interviews
+- 💼 Get career recommendations
+- 📈 Improve ATS Resume Score
+- 🤖 Receive personalized AI feedback
 
 ---
 
-## ✨ Features
+# ✨ Features
 
-### 🔐 Authentication
-- JWT Login
-- Registration
-- Secure APIs
+### 👤 User Module
+
+- User Registration
+- Secure Login & Authentication
+- Resume Upload
+- Resume ATS Analysis
+- AI Career Suggestions
+- Mock Interview Practice
+- Performance Dashboard
 - Profile Management
-- Delete Account
-
-### 📄 Resume Module
-- Upload Resume (PDF)
-- Resume History
-- Download Resume
-- Delete Resume
-
-### 🤖 ATS Resume Analyzer
-- Resume Parsing
-- ATS Score
-- Skills Analysis
-- Formatting Score
-- Experience Score
-- Education Score
-- Recommendations
-- Dashboard Statistics
-
-### 🎤 Mock Interview
-- Role Selection
-- Difficulty Selection
-- AI Generated Questions
-- Answer Evaluation
-- Interview Score
-- Feedback
-- Interview History
-
-### 📊 Dashboard
-- Resume Statistics
-- ATS Statistics
-- Interview Statistics
-- Recent Activity
 
 ---
 
-# 🛠 Tech Stack
+### 👨‍💼 Admin Module
+
+- Admin Login
+- Manage Users
+- Manage Interview Questions
+- Dashboard Analytics
+- View Uploaded Resumes
+- Manage AI Reports
+
+---
+
+### 🤖 AI Module
+
+- Resume Analysis
+- ATS Score Generation
+- Career Recommendation
+- Skill Gap Analysis
+- AI Feedback
+- Interview Evaluation
+
+---
+
+# 🏗️ Project Architecture
+
+```
+CareerLens-AI
+│
+├── frontend/
+│     React Application
+│
+├── java-backend/
+│     Spring Boot REST APIs
+│
+├── python-ai-service/
+│     FastAPI AI Services
+│
+└── MySQL Database
+```
+
+---
+
+# 🛠️ Tech Stack
 
 ## Frontend
 
 - React
-- TypeScript
-- Vite
-- Axios
-- React Router
-- CSS
+- HTML5
+- CSS3
+- JavaScript
+- Bootstrap
 
 ## Backend
 
-- Java 21
+- Java
 - Spring Boot
 - Spring Security
-- JWT
-- Spring Data JPA
+- JWT Authentication
 - Maven
 
 ## AI Service
 
 - Python
 - FastAPI
-- Scikit-learn
+- Machine Learning
 
 ## Database
 
@@ -82,46 +111,24 @@ CareerLens AI helps students and job seekers improve their resumes, analyze ATS 
 
 ---
 
-# 📂 Project Structure
+# 📂 Folder Structure
 
-CareerLens-AI
-
-├── frontend
-
-├── java-backend
-
-├── python-ai-service
-
-├── docs
-
-└── README.md
+```
+frontend/
+java-backend/
+python-ai-service/
+README.md
+PROJECT_REQUIREMENTS.md
+```
 
 ---
 
 # ⚙️ Installation
 
-## Clone
+## Clone Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/careerlens-ai.git
-
-cd careerlens-ai
-```
-
----
-
-## Backend
-
-```bash
-cd java-backend
-
-mvn spring-boot:run
-```
-
-Runs on
-
-```
-http://localhost:8080
+git clone https://github.com/yourusername/careerlens-ai.git
 ```
 
 ---
@@ -136,96 +143,112 @@ npm install
 npm run dev
 ```
 
-Runs on
+---
 
-```
-http://localhost:5173
+## Spring Boot Backend
+
+```bash
+cd java-backend
+
+mvn spring-boot:run
 ```
 
 ---
 
-## AI Service
+## FastAPI AI Service
 
 ```bash
 cd python-ai-service
 
 pip install -r requirements.txt
 
-uvicorn app.main:app --reload
-```
-
-Runs on
-
-```
-http://localhost:8000
+uvicorn main:app --reload
 ```
 
 ---
 
 ## Database
 
-Create MySQL database
+Create MySQL Database
 
 ```
-careerlens_db
+careerlens
 ```
 
-Update
+Update your MySQL username and password inside
 
 ```
 application.properties
 ```
 
-with your MySQL username/password.
-
 ---
 
-# 📷 Screenshots
+# 📸 Screenshots
 
-## Login
+## Home Page
 
-(Add screenshot)
+(Add Screenshot)
 
 ## Dashboard
 
-(Add screenshot)
+(Add Screenshot)
 
-## Resume Upload
+## Resume Analysis
 
-(Add screenshot)
-
-## ATS Result
-
-(Add screenshot)
+(Add Screenshot)
 
 ## Mock Interview
 
-(Add screenshot)
+(Add Screenshot)
 
 ---
 
-# 📈 Future Improvements
+# 🚀 Future Improvements
 
-- Resume Builder
-- Cover Letter Generator
+- AI Resume Builder
+- Company-wise Interview Questions
+- AI Chat Assistant
 - Voice Interview
-- AI Career Guidance
-- Job Recommendation
-- Email Verification
-- Docker Deployment
+- Job Recommendation System
+- Resume PDF Generator
 
 ---
 
-# 👩‍💻 Developer
+# 🤝 Contributors
 
-Sulagna Dey
+This project was developed collaboratively.
 
-GitHub
+## Team Members
 
-https://github.com/Sulaggna
+| Name | Role |
+|------|------|
+| **Sulagna Dey** | Full Stack Developer |
+| **Teammate Name** | Frontend Developer |
+| **Teammate Name** | AI/ML Developer |
 
 ---
 
-# 📜 License
+## Individual Contributions
 
-MIT
+### Sulagna Dey
+
+- Spring Boot Backend Development
+- REST API Development
+- Database Design
+- Authentication & Authorization
+- GitHub Repository Management
+
+### Rohit Shill
+
+- React Frontend
+- UI Design
+- Dashboard
+- FastAPI
+- AI Resume Analysis
+- Machine Learning
+
+---
+
+# 📄 License
+
+This project is developed for educational and placement purposes.
